@@ -896,7 +896,6 @@ class Stc12BaseProtocol(StcBaseProtocol):
 
         Initate and do the (rather complicated) baudrate handshake.
         """
-
         # start baudrate handshake
         brt, brt_csum, iap, delay = self.calculate_baud()
         print("Switching to %d baud: " % self.baud_transfer, end="")
@@ -1131,7 +1130,7 @@ class Stc15AProtocol(Stc12Protocol):
         packet += bytes([0x98, 0x00, 0x02, 0x00])
         packet += bytes([0x98, 0x80, 0x02, 0x00])
         self.write_packet(packet)
-        self.pulse(timeout=1.0)
+        self.pulse(timeout=5.0)
         response = self.read_packet()
         if len(response) < 36 or response[0] != 0x65:
             raise StcProtocolException("incorrect magic in handshake packet")
@@ -1181,7 +1180,7 @@ class Stc15AProtocol(Stc12Protocol):
             packet += struct.pack(">H", target_trim_start + i)
             packet += bytes([0x02, 0x00])
         self.write_packet(packet)
-        self.pulse(timeout=1.0)
+        self.pulse(timeout=5.0)
         response = self.read_packet()
         if len(response) < 56 or response[0] != 0x65:
             raise StcProtocolException("incorrect magic in handshake packet")
@@ -1357,7 +1356,7 @@ class Stc15Protocol(Stc15AProtocol):
         packet += bytes([0x00, 0x40, 0x80, 0x40, 0xff, 0x40])
         packet += bytes([0x00, 0x00, 0x80, 0x00, 0xc0, 0x00])
         self.write_packet(packet)
-        self.pulse(b"\xfe", timeout=1.0)
+        self.pulse(b"\xfe", timeout=5.0)
         response = self.read_packet()
         if len(response) < 2 or response[0] != 0x00:
             raise StcProtocolException("incorrect magic in handshake packet")
@@ -1376,7 +1375,7 @@ class Stc15Protocol(Stc15AProtocol):
         for i in range(prog_trim[0] - 3, prog_trim[0] + 3):
             packet += bytes([i & 0xff, prog_trim[1]])
         self.write_packet(packet)
-        self.pulse(b"\xfe", timeout=1.0)
+        self.pulse(b"\xfe", timeout=5.0)
         response = self.read_packet()
         if len(response) < 2 or response[0] != 0x00:
             raise StcProtocolException("incorrect magic in handshake packet")
@@ -1635,7 +1634,7 @@ class Stc8Protocol(Stc15Protocol):
         packet += bytes([23*6, 0x00, 23*7, 0x00, 23*8, 0x00])
         packet += bytes([23*9, 0x00, 23*10, 0x00, 255, 0x00])
         self.write_packet(packet)
-        self.pulse(b"\xfe", timeout=1.0)
+        self.pulse(b"\xfe", timeout=5.0)
         response = self.read_packet()
         if len(response) < 2 or response[0] != 0x00:
             raise StcProtocolException("incorrect magic in handshake packet")
@@ -1661,7 +1660,7 @@ class Stc8Protocol(Stc15Protocol):
         for i in range(user_trim[0] - 1, user_trim[0] + 2):
             packet += bytes([i & 0xff, 0x03])
         self.write_packet(packet)
-        self.pulse(b"\xfe", timeout=1.0)
+        self.pulse(b"\xfe", timeout=5.0)
         response = self.read_packet()
         if len(response) < 2 or response[0] != 0x00:
             raise StcProtocolException("incorrect magic in handshake packet")
@@ -1680,7 +1679,7 @@ class Stc8Protocol(Stc15Protocol):
         packet += struct.pack(">H", round(65536 - 24E6 / bauds))
         packet += bytes([user_trim[1], user_trim[0]])
         iap_wait = self.get_iap_delay(24E6)
-        packet += bytes([iap_wait])
+        packet += bytes([0x97])
         self.write_packet(packet)
         response = self.read_packet()
         if len(response) < 1 or response[0] != 0x01:
